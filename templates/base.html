@@ -9,8 +9,9 @@
 <body>
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <a class="navbar-brand" href="{{url_for('index')}}">Home Page</a>
-    <button><a href="{{url_for('signup_page')}}">Sign Up</a></button></nav>
-    <button><a href="{{url_for('login_page')}}">Sign Up</a></button></nav>
+    <button class="navbar-brand"><a href="{{url_for('signup_page')}}">Sign Up</a></button>
+    <button class="navbar-brand"><a href="{{url_for('login_page')}}">Login</a></button>
+</nav>
 
 {% block content %}
 {% endblock %}
