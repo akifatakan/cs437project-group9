@@ -2,7 +2,9 @@
 
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import DataRequired, Email, EqualTo, ValidationError
+from wtforms.validators import DataRequired, Email, EqualTo
+from wtforms import ValidationError
+from .models import User
 
 
 class SignUpForm(FlaskForm):
@@ -15,6 +17,13 @@ class SignUpForm(FlaskForm):
                                                  EqualTo('password', message="Passwords must match.")])
     submit = SubmitField('Sign Up')
 
+    def validate_email(self, email):
+        if User.query.filter_by(email=self.email.data).first():
+            raise ValidationError('Email has been registered')
+
+    def validate_username(self, username):
+        if User.query.filter_by(username=self.username.data).first():
+            raise ValidationError('Username has been registered')
 
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(message="Please enter your email address."),
