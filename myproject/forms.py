@@ -25,8 +25,13 @@ class SignUpForm(FlaskForm):
         if User.query.filter_by(username=self.username.data).first():
             raise ValidationError('Username has been registered')
 
+
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(message="Please enter your email address."),
                                              Email(message="Invalid email address.")])
     password = PasswordField('Password', validators=[DataRequired(message="Please enter your password.")])
     submit = SubmitField('Log In')
+
+
+class ChangeRoleForm(FlaskForm):
+    submit = SubmitField('Change Role')

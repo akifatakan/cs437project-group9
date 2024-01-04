@@ -3,7 +3,17 @@ from myproject import app, db
 from flask import render_template, redirect, request, url_for, flash, abort
 from flask_login import login_user, login_required, logout_user
 from myproject.models import User
-from myproject.forms import SignUpForm, LoginForm
+from myproject.forms import SignUpForm, LoginForm, ChangeRoleForm
+from myproject.auth_config import admin_required
+
+
+@app.route('/admin')
+@login_required
+@admin_required
+def admin_page():
+    users = User.query.all()
+    form = ChangeRoleForm()
+    return render_template('admin.html', users=users, form=form)
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -68,6 +78,19 @@ def login_page():
 
             return redirect(next)
     return render_template('login.html', form=form)
+
+@app.route('/change_role/<int:user_id>', methods=['POST'])
+@admin_required
+@login_required
+def change_role(user_id):
+    user = User.query.get(user_id)
+
+    if request.method == 'POST':
+        user.is_admin = not user.is_admin
+        db.session.commit()
+        flash(f'Toggled admin status for user {user.username}.', 'success')
+
+    return redirect(url_for('admin_page'))
 
 
 if __name__ == '__main__':
