@@ -35,3 +35,23 @@ class User(db.Model, UserMixin):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+
+class News(db.Model):
+    __tablename__ = "news"
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(256))
+    subtitle = db.Column(db.String(2048))
+    published = db.Column(db.String(256))
+    image_url = db.Column(db.String(256))
+    details = db.Column(db.String(4096))
+    link = db.Column(db.String(256))
+
+    def __init__(self, title, subtitle, published, image_url, details, link):
+        self.title = title
+        self.subtitle = subtitle
+        self.published = published
+        self.image_url = image_url
+        self.details = details[0:4095]
+        self.link = link

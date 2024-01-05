@@ -35,3 +35,13 @@ class LoginForm(FlaskForm):
 
 class ChangeRoleForm(FlaskForm):
     submit = SubmitField('Change Role')
+
+
+class SearchNewsForm(FlaskForm):
+    search_query = StringField('Search News')
+    submit = SubmitField('Search')
+
+
+class SearchUsersForm(FlaskForm):
+    search_query = StringField('Search News')
+    submit = SubmitField('Search')

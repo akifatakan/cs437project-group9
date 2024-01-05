@@ -3,6 +3,13 @@
     <div class="container mt-4">
         <h1>Admin Page</h1>
 
+
+        <form method="POST" class="form-inline mt-3 mb-3">
+            {{ search_form.hidden_tag() }}
+            {{ search_form.search_query(class="form-control mr-sm-2", placeholder="Search Users by ID", value=searched_text) }}
+            {{ search_form.submit(class="btn btn-outline-primary my-2 my-sm-0") }}
+        </form>
+
         <table class="table table-bordered text-center">
             <thead class="thead-dark">
             <tr>

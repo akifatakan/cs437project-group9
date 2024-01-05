@@ -1,11 +1,24 @@
 {% extends "base.html" %}
 {% block content %}
-    <div class="jumbotron">
-        {% if current_user.is_authenticated %}
-            <p>Hi {{ current_user.username }}!</p>
-        {% else %}
-            <p>Please login or register!</p>
-        {% endif %}
-    </div>
+    <h1>Güncel Finans Haberleri</h1>
+
+    <form method="POST" class="form-inline mt-3 mb-3">
+        {{ form.hidden_tag() }}
+        {{ form.search_query(class="form-control mr-sm-2", placeholder="Search News", value=searched_text) }}
+        {{ form.submit(class="btn btn-outline-primary my-2 my-sm-0") }}
+    </form>
+
+    <ul>
+        {% for entry in entries %}
+            <li class="bg-light">
+                <h2>{{ entry.title }}</h2>
+                <h5>{{ entry.subtitle }}</h5>
+                <p class="text-muted">Published on: {{ entry.published }}</p>
+                <img src="{{ entry.image_url }}" alt="Image" class="img-fluid">
+                <p> {{ entry.details }}</p>
+                <a href="{{ entry.link }}" target="_blank">Read more</a>
+            </li>
+        {% endfor %}
+    </ul>
 
 {% endblock %}

@@ -1,24 +1,62 @@
 # app.py
 from myproject import app, db
+from sqlalchemy import create_engine, text
+
 from flask import render_template, redirect, request, url_for, flash, abort
 from flask_login import login_user, login_required, logout_user
-from myproject.models import User
-from myproject.forms import SignUpForm, LoginForm, ChangeRoleForm
+from myproject.models import User, News
+from myproject.forms import SignUpForm, LoginForm, ChangeRoleForm, SearchNewsForm, SearchUsersForm
 from myproject.auth_config import admin_required
 
 
-@app.route('/admin')
+
+engine = create_engine("mysql+pymysql://cs437:cs437project@localhost/cs437_finance_db")
+
+
+@app.route('/admin', methods=["GET", "POST"])
 @login_required
 @admin_required
 def admin_page():
     users = User.query.all()
     form = ChangeRoleForm()
-    return render_template('admin.html', users=users, form=form)
+    search_form = SearchUsersForm()
+
+    if search_form.validate_on_submit():
+        searched_text = search_form.search_query.data
+        if searched_text == "":
+            users = User.query.all()
+        else:
+            query = f"SELECT * FROM users WHERE id = {searched_text}"
+            sql_expression = text(query)
+            print(sql_expression)
+            with engine.connect() as connection:
+                result = connection.execute(sql_expression)
+                users = result.fetchall()
+        return render_template('admin.html', users=users, form=form, search_form=search_form)
+
+    return render_template('admin.html', users=users, form=form, search_form=search_form)
 
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    return render_template('index.html')
+
+    form = SearchNewsForm()
+    if form.validate_on_submit():
+
+        searched_text = form.search_query.data
+        if searched_text == "":
+            entries = News.query.all()
+        else:
+            query = f"SELECT * FROM news WHERE title LIKE '%{searched_text}%'"
+            sql_expression = text(query)
+            with engine.connect() as connection:
+                result = connection.execute(sql_expression)
+                entries = result.fetchall()
+            print(entries[0])
+        return render_template('index.html', entries=entries, form = form)
+
+    entries = News.query.all()
+    return render_template('index.html', entries=entries, form=form)
 
 
 @app.route('/logout')
@@ -78,6 +116,7 @@ def login_page():
 
             return redirect(next)
     return render_template('login.html', form=form)
+
 
 @app.route('/change_role/<int:user_id>', methods=['POST'])
 @admin_required
