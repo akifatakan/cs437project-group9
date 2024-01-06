@@ -75,3 +75,19 @@ class Comment(db.Model):
 
     def __repr__(self):
         return f'<Comment {self.id}>'
+
+
+class Friendship(db.Model):
+
+    __tablename__ = "friendships"
+
+    id= db.Column(db.Integer, primary_key=True)
+    follower_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    following_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+    def __init__(self, follower_id, following_id):
+        self.follower_id = follower_id
+        self.following_id = following_id
+
+    def __repr__(self):
+        return f'<friendship {self.id}>'

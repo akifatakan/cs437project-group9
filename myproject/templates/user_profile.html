@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>User Profile - {{ user.username }}</h1>
+    <p>Email: {{ user.email }}</p>
+    {% if current_user.is_authenticated and current_user.id != user.id %}
+        {% if current_user not in followers %}
+            <form method="post" action="{{ url_for('follow', user_id=user.id) }}">
+                {{ follow_form.csrf_token }}
+                <button type="submit" class="btn btn-primary btn-sm">Follow</button>
+            </form>
+        {% else %}
+            <form method="post" action="{{ url_for('unfollow', user_id=user.id) }}">
+                {{ unfollow_form.csrf_token }}
+                <button type="submit" class="btn btn-danger btn-sm">Unfollow</button>
+            </form>
+        {% endif %}
+    {% endif %}
+    <a href="{{ url_for('user_followers', username=user.username) }}">Followers</a>
+    <a href="{{ url_for('user_followings', username=user.username) }}">Followings</a>
+    <h2>Comments by {{ user.username }}</h2>
+    <ul>
+        {% for comment in comments %}
+            <li onclick="location.href='{{ url_for('news_details', news_id=comment.news_id) }}';" style="cursor: pointer;">
+                <p>{{ comment.comment }}</p>
+                <p class="text-muted">Commented on: {{ comment.comment_date }}</p>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

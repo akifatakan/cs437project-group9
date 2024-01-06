@@ -11,7 +11,7 @@
     <h2>Comments</h2>
     <ul>
         {% for comment in comments %}
-            <li>{{ comment.comment }} - {{ comment.user.username }} ({{ comment.comment_date }})
+            <li>{{ comment.comment }} - <a href="{{ url_for("user_profile", username=comment.user.username)}}">{{ comment.user.username }}</a> ({{ comment.comment_date }})
 
                 {% if current_user.is_authenticated  and current_user.is_admin %}
                 <form method="post" action="{{ url_for('delete_comment', comment_id=comment.id) }}">

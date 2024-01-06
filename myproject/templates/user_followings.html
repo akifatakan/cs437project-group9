@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>User Profile - {{ user.username }}</h1>
+    <p>Email: {{ user.email }}</p>
+
+    <h2>Followings</h2>
+    <ul>
+        {% for following in followings %}
+            <li onclick="location.href='{{ url_for('user_profile', username=following.username) }}';" style="cursor: pointer;">
+                <p>{{ following.username }}</p>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

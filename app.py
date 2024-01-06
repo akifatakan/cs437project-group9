@@ -4,9 +4,10 @@ from sqlalchemy import create_engine, text
 
 from flask import render_template, redirect, request, url_for, flash
 from flask_login import login_user, login_required, logout_user, current_user
-from myproject.models import User, News, Comment
+from myproject.models import User, News, Comment, Friendship
 from myproject.forms import (SignUpForm, LoginForm, DeleteUserForm, ChangeRoleForm,
-                             SearchNewsForm, SearchUsersForm, CommentForm, DeleteCommentForm)
+                             SearchNewsForm, SearchUsersForm, CommentForm, DeleteCommentForm,
+                             SearchUserForm, FollowFriendForm, UnfollowFriendForm)
 from myproject.auth_config import admin_required
 
 engine = create_engine("mysql+pymysql://cs437:cs437project@localhost/cs437_finance_db")
@@ -183,6 +184,98 @@ def delete_comment(comment_id):
         db.session.commit()
 
     return redirect(url_for("news_details", news_id=news_id))
+
+
+@app.route('/user/<username>')
+def user_profile(username):
+    user = User.query.filter_by(username=username).first()
+    follow_form = FollowFriendForm()
+    unfollow_form = UnfollowFriendForm()
+    if not user:
+        flash('User not found', 'danger')
+        return redirect(url_for('index'))
+
+    comments = Comment.query.filter_by(user_id=user.id).all()
+
+    followers = Friendship.query.filter_by(following_id=user.id)
+
+    follower_users = [User.query.get(follower.follower_id) for follower in followers]
+
+    return render_template('user_profile.html', user=user, comments=comments,
+                           follow_form=follow_form, unfollow_form=unfollow_form, followers=follower_users)
+
+
+@app.route('/search_user', methods=['GET', 'POST'])
+def search_user():
+    form = SearchUserForm()
+    users = []
+    if form.validate_on_submit():
+        search_term = form.search_term.data
+        # Check if the search term is numeric (assuming it's a user ID)
+        query = f"SELECT * FROM users WHERE username LIKE '%{search_term}%'"
+        sql_expression = text(query)
+        print(sql_expression)
+        with engine.connect() as connection:
+            result = connection.execute(sql_expression)
+            users = result.fetchall()
+
+        return render_template('search_user.html', users=users, form=form)
+
+    return render_template('search_user.html', form=form, users=users)
+
+
+@app.route('/user/<username>/followers')
+def user_followers(username):
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        flash('User not found', 'danger')
+        return redirect(url_for('index'))
+
+    followers = Friendship.query.filter_by(following_id=user.id)
+
+    follower_users = [User.query.get(follower.follower_id) for follower in followers]
+
+    return render_template('user_followers.html', user=user, followers=follower_users)
+
+
+@app.route('/user/<username>/followings')
+def user_followings(username):
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        flash('User not found', 'danger')
+        return redirect(url_for('index'))
+
+    followings = Friendship.query.filter_by(follower_id=user.id)
+
+    following_users = [User.query.get(following.following_id) for following in followings]
+
+    return render_template('user_followings.html', user=user, followings=following_users)
+
+
+@app.route('/follow/<int:user_id>', methods=['POST'])
+@login_required
+def follow(user_id):
+    user = User.query.get(user_id)
+    friendship = Friendship(follower_id=current_user.id, following_id=user_id)
+
+    if request.method == 'POST':
+        db.session.add(friendship)
+        db.session.commit()
+
+    return redirect(url_for('user_profile', username=user.username))
+
+
+@app.route('/unfollow/<int:user_id>', methods=['POST'])
+@login_required
+def unfollow(user_id):
+    user = User.query.get(user_id)
+    friendship = Friendship.query.filter_by(follower_id=current_user.id, following_id=user_id).first()
+
+    if request.method == 'POST':
+        db.session.delete(friendship)
+        db.session.commit()
+
+    return redirect(url_for('user_profile', username=user.username))
 
 
 if __name__ == '__main__':

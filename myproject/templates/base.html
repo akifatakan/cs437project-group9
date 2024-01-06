@@ -19,7 +19,10 @@
             {% if current_user.is_admin %}
                 <a class="nav-item nav-link" href="{{ url_for('admin_page') }}">Admin Page</a>
             {% endif %}
+            <a class="nav-item nav-link" href="{{ url_for('user_profile', username=current_user.username) }}">Profile</a>
+            <a class="nav-item nav-link" href="{{ url_for('search_user') }}">Search User</a>
             <a class="nav-item nav-link" href="{{ url_for('logout') }}">Log Out</a>
+
         {% else %}
             <a class="nav-item nav-link" href="{{ url_for('signup_page') }}">Sign Up</a>
             <a class="nav-item nav-link" href="{{ url_for('login_page') }}">Log In</a>

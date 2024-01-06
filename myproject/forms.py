@@ -58,3 +58,16 @@ class DeleteCommentForm(FlaskForm):
 
 class DeleteUserForm(FlaskForm):
     submit = SubmitField("Delete User")
+
+
+class SearchUserForm(FlaskForm):
+    search_term = StringField('Search by User ID or Username')
+    submit = SubmitField('Search')
+
+
+class FollowFriendForm(FlaskForm):
+    submit = SubmitField('Follow')
+
+
+class UnfollowFriendForm(FlaskForm):
+    submit = SubmitField('Unfollow')
