@@ -10,7 +10,7 @@
 
     <ul>
         {% for entry in entries %}
-            <li class="bg-light">
+            <li class="bg-light" onclick="location.href='{{ url_for('news_details', news_id=entry.id) }}';" style="cursor: pointer;">
                 <h2>{{ entry.title }}</h2>
                 <h5>{{ entry.subtitle }}</h5>
                 <p class="text-muted">Published on: {{ entry.published }}</p>

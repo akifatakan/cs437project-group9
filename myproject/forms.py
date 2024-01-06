@@ -1,7 +1,7 @@
 # forms.py
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
+from wtforms import StringField, PasswordField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Email, EqualTo
 from wtforms import ValidationError
 from .models import User
@@ -45,3 +45,16 @@ class SearchNewsForm(FlaskForm):
 class SearchUsersForm(FlaskForm):
     search_query = StringField('Search News')
     submit = SubmitField('Search')
+
+
+class CommentForm(FlaskForm):
+    comment = TextAreaField('Comment', validators=[DataRequired()])
+    submit = SubmitField('Submit Comment')
+
+
+class DeleteCommentForm(FlaskForm):
+    submit = SubmitField('Delete Comment')
+
+
+class DeleteUserForm(FlaskForm):
+    submit = SubmitField("Delete User")

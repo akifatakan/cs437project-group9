@@ -1,3 +1,4 @@
+import datetime
 from myproject import db, login_manager
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
@@ -55,3 +56,22 @@ class News(db.Model):
         self.image_url = image_url
         self.details = details[0:4095]
         self.link = link
+
+
+class Comment(db.Model):
+
+    __tablename__ = 'comments'
+
+    id = db.Column(db.Integer, primary_key=True)
+    news_id = db.Column(db.Integer, db.ForeignKey('news.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    comment = db.Column(db.Text, nullable=False)
+    comment_date = db.Column(db.DateTime, default=datetime.datetime.now())
+
+    def __init__(self, news_id, user_id, comment):
+        self.news_id = news_id
+        self.user_id = user_id
+        self.comment = comment
+
+    def __repr__(self):
+        return f'<Comment {self.id}>'

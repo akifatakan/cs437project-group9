@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>{{ news_entry.title }}</h1>
+    <h5>{{ news_entry.subtitle }}</h5>
+    <p class="text-muted">Published on: {{ news_entry.published }}</p>
+    <img src="{{ news_entry.image_url }}" alt="Image" class="img-fluid">
+    <p>{{ news_entry.details }}</p>
+    <a href="{{ news_entry.link }}" target="_blank">Read more</a>
+
+    <!-- Display existing comments -->
+    <h2>Comments</h2>
+    <ul>
+        {% for comment in comments %}
+            <li>{{ comment.comment }} - {{ comment.user.username }} ({{ comment.comment_date }})
+
+                {% if current_user.is_authenticated  and current_user.is_admin %}
+                <form method="post" action="{{ url_for('delete_comment', comment_id=comment.id) }}">
+                    {{ deleteCommentForm.csrf_token }}
+                    <button type="submit" class="btn btn-danger btn-sm">Delete Comment</button>
+                </form>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+
+    <!-- Comment Form -->
+    {% if current_user.is_authenticated %}
+    <h2>Add a Comment</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.comment.label }}
+            {{ form.comment(class="form-control", placeholder="Type your comment here...") }}
+        </div>
+            {{ form.submit(class="btn btn-primary") }}
+    </form>
+    {% else %}
+    <p>Please <a href="{{ url_for('login_page') }}">login</a> to add comments.</p>
+    {% endif %}
+{% endblock %}

@@ -17,7 +17,8 @@
                 <th>Username</th>
                 <th>Email</th>
                 <th>Is Admin</th>
-                <th>Action</th>
+                <th>Toggle Admin</th>
+                <th>Delete User</th>
             </tr>
             </thead>
             <tbody>
@@ -31,6 +32,12 @@
                         <form method="post" action="{{ url_for('change_role', user_id=user.id) }}">
                             {{ form.csrf_token }}
                             <button type="submit" class="btn btn-info btn-sm">Toggle Admin</button>
+                        </form>
+                    </td>
+                    <td>
+                        <form method="post" action="{{ url_for('delete_user', user_id=user.id) }}">
+                            {{ form.csrf_token }}
+                            <button type="submit" class="btn btn-danger btn-sm">Delete User</button>
                         </form>
                     </td>
                 </tr>
