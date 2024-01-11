@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <article class="news-article">
+        <header class="article-header">
+            <h1 class="article-title">{{ news_entry.title }}</h1>
+            <h2 class="article-subtitle">{{ news_entry.subtitle }}</h2>
+            <p class="article-metadata text-muted">Published on: {{ news_entry.published }}</p>
+        </header>
+        <figure class="article-image">
+            <img src="{{ news_entry.image_url }}" alt="Image" class="img-fluid">
+        </figure>
+        <section class="article-content">
+            <p>{{ news_entry.details }}</p>
+            <a href="{{ url_for('redirect_to_external') }}?url={{ news_entry.link }}" class="read-more" target="_blank">Read more</a>
+        </section>
+
+        <!-- Display existing comments -->
+        <section class="comments-section">
+            <h2 class="comments-title">Comments</h2>
+            <ul class="comments-list">
+                {% for comment in comments %}
+                    <li class="comment">
+                        <span class="comment-text">{{ comment.comment }}</span>
+                        - <a href="{{ url_for('user_profile', username=comment.user.username) }}" class="comment-user">{{ comment.user.username }}</a>
+                        <span class="comment-date">({{ comment.comment_date }})</span>
+
+                        {% if current_user.is_authenticated and current_user.is_admin %}
+                            <form method="post" action="{{ url_for('delete_comment', comment_id=comment.id) }}" class="delete-comment-form">
+                                {{ deleteCommentForm.csrf_token }}
+                                <button type="submit" class="btn btn-danger btn-sm">Delete Comment</button>
+                            </form>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <!-- Comment Form -->
+        {% if current_user.is_authenticated %}
+            <section class="add-comment-section">
+                <h2 class="add-comment-title">Add a Comment</h2>
+                <form method="POST" class="add-comment-form">
+                    {{ form.hidden_tag() }}
+                    <div class="form-group">
+                        {{ form.comment(class="form-control comment-input", placeholder="Express your thoughts...") }}
+                    </div>
+                    {{ form.submit(class="btn btn-primary submit-comment") }}
+                </form>
+            </section>
+        {% else %}
+            <p class="login-prompt">Please <a href="{{ url_for('login_page') }}" class="login-link">login</a> to add comments.</p>
+        {% endif %}
+    </article>
+
+{% endblock %}
