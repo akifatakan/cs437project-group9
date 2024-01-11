@@ -4,7 +4,7 @@ from myproject import db
 
 
 def fetch_news():
-    feed_title, entries = parse_rss_feeds('https://www.ntv.com.tr/ekonomi.rss')
+    feed_title, entries = parse_rss_feeds('https://www.ntv.com.tr/ntvpara.rss')
     for entry in entries:
         entry["subtitle"], entry["image_url"], entry["details"] = parse_html_content(entry.summary)
 

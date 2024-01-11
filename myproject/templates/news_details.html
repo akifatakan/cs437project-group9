@@ -12,7 +12,7 @@
         </figure>
         <section class="article-content">
             <p>{{ news_entry.details }}</p>
-            <a href="{{ news_entry.link }}" class="read-more" target="_blank">Read more</a>
+            <a href="{{ url_for('redirect_to_external') }}?url={{ news_entry.link }}" class="read-more" target="_blank">Read more</a>
         </section>
 
         <!-- Display existing comments -->

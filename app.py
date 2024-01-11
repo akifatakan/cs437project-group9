@@ -167,6 +167,11 @@ def news_details(news_id):
     form = CommentForm()
     deleteCommentForm = DeleteCommentForm()
 
+    redirect_url = request.args.get('url')
+    if redirect_url:
+        print(redirect_url)
+        return redirect(redirect_url)
+
     if form.validate_on_submit() and current_user.is_authenticated:
         comment_text = form.comment.data
         new_comment = Comment(comment=comment_text, news_id=news_entry.id, user_id=current_user.id)
@@ -308,5 +313,21 @@ def search_comment():
     return render_template('search_comment.html', form=form)
 
 
+@app.route('/redirect')
+def redirect_to_external():
+    url = request.args.get('url', None)
+    if url:
+        #A10 --> UNVALIDATED REDIRECT AND FORWARD
+        return redirect(url)
+        """
+        if "www.ntv.com.tr" in url:
+            return redirect(url)
+        else:
+            return "Invalid URL"
+        """
+
+    return "No URL provided for redirection."
+
+
 if __name__ == '__main__':
-    app.run(debug_mode=True)
+    app.run(debug=True)
