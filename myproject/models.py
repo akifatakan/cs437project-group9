@@ -72,6 +72,7 @@ class Comment(db.Model):
         self.news_id = news_id
         self.user_id = user_id
         self.comment = comment
+        self.comment_date = datetime.datetime.now()
 
     def __repr__(self):
         return f'<Comment {self.id}>'
@@ -91,3 +92,8 @@ class Friendship(db.Model):
 
     def __repr__(self):
         return f'<friendship {self.id}>'
+    
+class Dummy(db.Model):
+
+    __tablename__ = "dummy"
+    id= db.Column(db.Integer, primary_key=True)

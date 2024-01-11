@@ -43,7 +43,6 @@
                 <form method="POST" class="add-comment-form">
                     {{ form.hidden_tag() }}
                     <div class="form-group">
-                        {{ form.comment.label(class="comment-label") }}
                         {{ form.comment(class="form-control comment-input", placeholder="Express your thoughts...") }}
                     </div>
                     {{ form.submit(class="btn btn-primary submit-comment") }}

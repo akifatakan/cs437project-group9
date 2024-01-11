@@ -178,7 +178,7 @@ def news_details(news_id):
             user = User.query.get(comment.user_id)
             comment.user = user
         form.comment.data = ""
-        redirect(url_for("news_details", news_id=news_entry.id))
+        return redirect(url_for("news_details", news_id=news_id))
 
     return render_template('news_details.html', news_entry=news_entry, comments=comments, form=form,
                            deleteCommentForm=deleteCommentForm)
@@ -223,9 +223,10 @@ def search_user():
     if form.validate_on_submit():
         search_term = form.search_term.data
         # Check if the search term is numeric (assuming it's a user ID)
-        query = f"SELECT * FROM users WHERE username LIKE '%{search_term}%'"
+        query = 'SELECT * FROM users WHERE username LIKE "%{0}%";'.format(search_term)
+        print("query", query)
         sql_expression = text(query)
-        print(sql_expression)
+        print("expr",sql_expression)
         with engine.connect() as connection:
             result = connection.execute(sql_expression)
             users = result.fetchall()
@@ -308,4 +309,4 @@ def search_comment():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug_mode=True)
