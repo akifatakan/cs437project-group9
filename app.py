@@ -1,13 +1,14 @@
 # app.py
+from fetch_news import fetch_news
 from myproject import app, db
 from sqlalchemy import create_engine, text
 
-from flask import render_template, redirect, request, url_for, flash
+from flask import render_template, redirect, request, url_for, flash, render_template_string, abort
 from flask_login import login_user, login_required, logout_user, current_user
 from myproject.models import User, News, Comment, Friendship
 from myproject.forms import (SignUpForm, LoginForm, DeleteUserForm, ChangeRoleForm,
                              SearchNewsForm, SearchUsersForm, CommentForm, DeleteCommentForm,
-                             SearchUserForm, FollowFriendForm, UnfollowFriendForm)
+                             SearchUserForm, FollowFriendForm, UnfollowFriendForm, SearchCommentForm)
 from myproject.auth_config import admin_required
 
 engine = create_engine("mysql+pymysql://cs437:cs437project@localhost/cs437_finance_db")
@@ -42,6 +43,7 @@ def admin_page():
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    fetch_news()
     form = SearchNewsForm()
     if form.validate_on_submit():
 
@@ -57,7 +59,7 @@ def index():
             print(entries[0])
         return render_template('index.html', entries=entries, form=form)
 
-    entries = News.query.all()
+    entries = News.query.order_by(News.published.desc()).all()
     return render_template('index.html', entries=entries, form=form)
 
 
@@ -72,6 +74,13 @@ def logout():
 @app.route('/welcome')
 @login_required
 def welcome_user():
+    if request.args.get('username'):
+        username = request.args.get('username')
+        template = f"""
+        <h1> Welcome {username} </h1> 
+        """
+        return render_template_string(template)
+
     return render_template('welcome_user.html')
 
 
@@ -133,6 +142,7 @@ def change_role(user_id):
 
     return redirect(url_for('admin_page'))
 
+
 @app.route('/delete_user/<int:user_id>', methods=['POST'])
 @admin_required
 @login_required
@@ -170,7 +180,8 @@ def news_details(news_id):
         form.comment.data = ""
         redirect(url_for("news_details", news_id=news_entry.id))
 
-    return render_template('news_details.html', news_entry=news_entry, comments=comments, form=form, deleteCommentForm=deleteCommentForm)
+    return render_template('news_details.html', news_entry=news_entry, comments=comments, form=form,
+                           deleteCommentForm=deleteCommentForm)
 
 
 @app.route('/delete_comment/<int:comment_id>', methods=['POST'])
@@ -276,6 +287,24 @@ def unfollow(user_id):
         db.session.commit()
 
     return redirect(url_for('user_profile', username=user.username))
+
+
+@app.route('/search_comments', methods=['POST', 'GET'])
+def search_comment():
+    form = SearchCommentForm()
+    template = ""
+    if form.validate_on_submit():
+        comment_id = form.search_term.data
+        comment = Comment.query.get(comment_id)
+        if comment is not None:
+            template = f"""
+            <p> {comment.comment} </p>"""
+        else:
+            template = f"""
+            <p> No comment found with id: {comment_id} </p>"""
+        return render_template_string(template)
+
+    return render_template('search_comment.html', form=form)
 
 
 if __name__ == '__main__':

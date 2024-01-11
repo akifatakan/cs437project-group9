@@ -71,3 +71,8 @@ class FollowFriendForm(FlaskForm):
 
 class UnfollowFriendForm(FlaskForm):
     submit = SubmitField('Unfollow')
+
+
+class SearchCommentForm(FlaskForm):
+    search_term = StringField('Search comment by ID')
+    submit = SubmitField('Search')

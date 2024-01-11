@@ -10,7 +10,8 @@ def fetch_news():
 
         news = News(entry['title'], entry['subtitle'], entry["published"],
                     entry['image_url'], entry['details'], entry['link'])
-
-        db.session.add(news)
-
+        if not News.query.filter_by(title=news.title).first():
+            db.session.add(news)
+        else:
+            print("fetched before")
     db.session.commit()

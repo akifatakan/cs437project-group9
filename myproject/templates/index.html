@@ -1,24 +1,28 @@
 {% extends "base.html" %}
 {% block content %}
-    <h1>Güncel Finans Haberleri</h1>
+    <h1 class="page-title">EkonomiGüncel</h1>
 
-    <form method="POST" class="form-inline mt-3 mb-3">
+    <form method="POST" class="search-form">
         {{ form.hidden_tag() }}
-        {{ form.search_query(class="form-control mr-sm-2", placeholder="Search News", value=searched_text) }}
-        {{ form.submit(class="btn btn-outline-primary my-2 my-sm-0") }}
+        {{ form.search_query(class="search-input", placeholder="Search News", value=searched_text) }}
+        {{ form.submit(class="search-button") }}
     </form>
 
-    <ul>
+
+    <div class="container">
         {% for entry in entries %}
-            <li class="bg-light" onclick="location.href='{{ url_for('news_details', news_id=entry.id) }}';" style="cursor: pointer;">
-                <h2>{{ entry.title }}</h2>
-                <h5>{{ entry.subtitle }}</h5>
-                <p class="text-muted">Published on: {{ entry.published }}</p>
-                <img src="{{ entry.image_url }}" alt="Image" class="img-fluid">
-                <p> {{ entry.details }}</p>
-                <a href="{{ entry.link }}" target="_blank">Read more</a>
-            </li>
+            <div class="news-card" onclick="location.href='{{ url_for('news_details', news_id=entry.id) }}';" style="cursor: pointer;">
+                <img src="{{ entry.image_url }}" alt="News Image" class="img-fluid">
+                <div class="news-card-content">
+                    <h2 class="news-card-title">{{ entry.title }}</h2>
+                    <p class="news-card-date">Published on: {{ entry.published }}</p>
+                    <p class="news-card-subtitle">{{ entry.subtitle }}</p>
+                    <p>{{ entry.details | truncate(150) }}</p>
+                    <a href="{{ entry.link }}" target="_blank" class="news-card-link">Read more</a>
+                </div>
+            </div>
         {% endfor %}
-    </ul>
+    </div>
+
 
 {% endblock %}
