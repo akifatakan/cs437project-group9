@@ -320,5 +320,21 @@ def redirect_to_external():
     return "No URL provided for redirection."
 
 
+@app.route('/createuser', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def create_user():
+    form = SignUpForm()
+    if form.validate_on_submit():
+        user = User(email=form.email.data,
+                    username=form.username.data,
+                    password=form.password.data)
+
+        db.session.add(user)
+        db.session.commit()
+        flash('User Created Successfully!')
+        return redirect(url_for('admin_page'))
+    return render_template('create_user.html', form=form)
+
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
