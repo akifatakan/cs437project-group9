@@ -23,6 +23,18 @@
                 <li class="comment">
                     <span class="comment-text">{{ comment.comment }}</span>
                     - <a href="{{ url_for('user_profile', username=comment.user.username) }}" class="comment-user">{{ comment.user.username }}</a>
+                    {% if current_user.id not in comment.likers%}
+                        <form method="post" action="{{ url_for('like_comment', comment_id=comment.id) }}" class="like-comment-form">
+                            {{ likeCommentForm.csrf_token }}
+                            <button type="submit" class="btn btn-primary btn-sm">Like</button>
+                        </form>
+                    {% else %}
+                        <form method="post" action="{{ url_for('unlike_comment', comment_id=comment.id) }}" class="like-comment-form">
+                            {{ unlikeCommentForm.csrf_token }}
+                            <button type="submit" class="btn btn-primary btn-sm">Unlike</button>
+                        </form>
+                    {% endif %}
+                    <p>({{comment.liker_count}})</p>
                     <span class="comment-date">({{ comment.comment_date }})</span>
 
                     {% if current_user.is_authenticated and current_user.is_admin %}

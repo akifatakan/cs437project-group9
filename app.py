@@ -111,7 +111,6 @@ def welcome_user():
         return render_template_string(template)
 
 
-
 @app.route('/signup', methods=['GET', 'POST'])
 def signup_page():
     form = SignUpForm()
