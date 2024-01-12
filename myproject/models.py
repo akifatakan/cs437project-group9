@@ -92,8 +92,5 @@ class Friendship(db.Model):
 
     def __repr__(self):
         return f'<friendship {self.id}>'
-    
-class Dummy(db.Model):
 
-    __tablename__ = "dummy"
-    id= db.Column(db.Integer, primary_key=True)
+

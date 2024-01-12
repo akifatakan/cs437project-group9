@@ -26,11 +26,10 @@ def parse_rss_feeds(rss_feed_url):
     # Fetch the RSS feed
     feed = feedparser.parse(rss_feed_url)
     # Extract relevant information from the feed
-    feed_title = feed.feed.title
     entries = feed.entries
 
     # Enhance each entry with an image URL from the article's content
     #for entry in entries:
     #   entry['image_url'] = get_image_url(entry)
 
-    return feed_title, entries
+    return entries
