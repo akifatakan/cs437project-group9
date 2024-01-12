@@ -96,3 +96,17 @@ class Friendship(db.Model):
         return f'<friendship {self.id}>'
 
 
+class LikeComment(db.Model):
+
+    __tablename__ = "comment_likes"
+
+    id= db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    comment_id = db.Column(db.Integer, db.ForeignKey('comments.id'), nullable=False)
+
+    def __init__(self, user_id, comment_id):
+        self.user_id = user_id
+        self.comment_id = comment_id
+
+    def __repr__(self):
+        return f'<likeComment {self.id}>'

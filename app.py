@@ -5,10 +5,11 @@ from sqlalchemy import create_engine, text
 
 from flask import render_template, redirect, request, url_for, flash, render_template_string, abort
 from flask_login import login_user, login_required, logout_user, current_user
-from myproject.models import User, News, Comment, Friendship
+from myproject.models import User, News, Comment, Friendship, LikeComment
 from myproject.forms import (SignUpForm, LoginForm, DeleteUserForm, ChangeRoleForm,
                              SearchNewsForm, SearchUsersForm, CommentForm, DeleteCommentForm,
-                             SearchUserForm, FollowFriendForm, UnfollowFriendForm, SearchCommentForm)
+                             SearchUserForm, FollowFriendForm, UnfollowFriendForm, SearchCommentForm,
+                             LikeCommentForm, UnlikeCommentForm)
 from myproject.auth_config import admin_required
 
 engine = create_engine("mysql+pymysql://cs437:cs437project@localhost/cs437_finance_db")
@@ -180,12 +181,17 @@ def news_details(news_id):
     # Assuming you have a model named News and a method to get details by ID
     news_entry = News.query.get(news_id)
     comments = Comment.query.filter_by(news_id=news_id).all()
+
     for comment in comments:
         user = User.query.get(comment.user_id)
         comment.user = user
+        comment_likers = LikeComment.query.filter_by(comment_id = comment.id)
+        comment.likers = [liker.user_id for liker in comment_likers]
+        comment.liker_count = len(comment.likers)
     form = CommentForm()
     deleteCommentForm = DeleteCommentForm()
-
+    likeCommentForm = LikeCommentForm()
+    unlikeCommentForm = UnlikeCommentForm()
     redirect_url = request.args.get('url')
     if redirect_url:
         print(redirect_url)
@@ -206,7 +212,8 @@ def news_details(news_id):
         return redirect(url_for("news_details", news_id=news_id))
 
     return render_template('news_details.html', news_entry=news_entry, comments=comments, form=form,
-                           deleteCommentForm=deleteCommentForm)
+                           deleteCommentForm=deleteCommentForm, 
+                           likeCommentForm=likeCommentForm, unlikeCommentForm = unlikeCommentForm)
 
 
 @app.route('/delete_comment/<int:comment_id>', methods=['POST'])
@@ -341,6 +348,29 @@ def redirect_to_external():
         return redirect(url)
 
     return "No URL provided for redirection."
+
+@app.route('/like_comment/<int:comment_id>', methods=['POST'])
+@login_required
+def like_comment(comment_id):
+    comment = Comment.query.get(comment_id)
+    likeComment = LikeComment(user_id=current_user.id, comment_id=comment_id) 
+    if request.method == 'POST':
+        db.session.add(likeComment)
+        db.session.commit()
+
+    return redirect(url_for("news_details", news_id=comment.news_id))
+
+@app.route('/unlike_comment/<int:comment_id>', methods=['POST'])
+@login_required
+def unlike_comment(comment_id):
+    comment = Comment.query.get(comment_id)
+    likeComment = LikeComment.query.filter_by(comment_id=comment_id, user_id=current_user.id).first()
+    if request.method == 'POST':
+        db.session.delete(likeComment)
+        db.session.commit()
+
+    return redirect(url_for("news_details", news_id=comment.news_id))
+
 
 
 if __name__ == '__main__':
