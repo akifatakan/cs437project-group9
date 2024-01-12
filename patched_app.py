@@ -10,8 +10,10 @@ from myproject.forms import (SignUpForm, LoginForm, DeleteUserForm, ChangeRoleFo
                              SearchNewsForm, SearchUsersForm, CommentForm, DeleteCommentForm,
                              SearchUserForm, FollowFriendForm, UnfollowFriendForm, SearchCommentForm)
 from myproject.auth_config import admin_required
+from markupsafe import escape
 
 engine = create_engine("mysql+pymysql://cs437:cs437project@localhost/cs437_finance_db")
+
 
 
 @app.route('/admin', methods=["GET", "POST"])
@@ -86,7 +88,8 @@ def signup_page():
     if form.validate_on_submit():
         user = User(email=form.email.data,
                     username=form.username.data,
-                    password=form.password.data)
+                    password=form.password.data,
+                    is_bot=False)
 
         db.session.add(user)
         db.session.commit()
@@ -181,7 +184,7 @@ def news_details(news_id):
         form.comment.data = ""
         return redirect(url_for("news_details", news_id=news_id))
 
-    return render_template('news_details.html', news_entry=news_entry, comments=comments, form=form,
+    return render_template('news_details_patched.html', news_entry=news_entry, comments=comments, form=form,
                            deleteCommentForm=deleteCommentForm)
 
 
@@ -224,7 +227,7 @@ def search_user():
     if form.validate_on_submit():
         search_term = form.search_term.data
         # Check if the search term is numeric (assuming it's a user ID)
-        query = text("SELECT * FROM users WHERE username LIKE :search_term")
+        query = text("SELECT * FROM users WHERE is_bot = 0 AND username LIKE :search_term")
 
         # Execute the query with the search term as a parameter
         users = db.session.execute(query, {"search_term": f"%{search_term}%"}).fetchall()
@@ -297,11 +300,11 @@ def search_comment():
         comment = Comment.query.get(comment_id)
         if comment is not None:
             template = f"""
-            <p> {comment.comment} </p>"""
+            <p> {comment.comment } </p>"""
         else:
             template = f"""
             <p> No comment found with id: {comment_id} </p>"""
-        return render_template_string(template)
+        return render_template_string(escape(template))
 
     return render_template('search_comment.html', form=form)
 
@@ -328,7 +331,8 @@ def create_user():
     if form.validate_on_submit():
         user = User(email=form.email.data,
                     username=form.username.data,
-                    password=form.password.data)
+                    password=form.password.data,
+                    is_bot=True)
 
         db.session.add(user)
         db.session.commit()

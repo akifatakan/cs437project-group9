@@ -91,7 +91,8 @@ def signup_page():
     if form.validate_on_submit():
         user = User(email=form.email.data,
                     username=form.username.data,
-                    password=form.password.data)
+                    password=form.password.data,
+                    is_bot=False)
 
         db.session.add(user)
         db.session.commit()
@@ -108,7 +109,8 @@ def create_user():
     if form.validate_on_submit():
         user = User(email=form.email.data,
                     username=form.username.data,
-                    password=form.password.data)
+                    password=form.password.data,
+                    is_bot=True)
 
         db.session.add(user)
         db.session.commit()
@@ -246,10 +248,11 @@ def search_user():
     if form.validate_on_submit():
         search_term = form.search_term.data
         # Check if the search term is numeric (assuming it's a user ID)
-        query = 'SELECT * FROM users WHERE username LIKE "%{0}%";'.format(search_term)
+        query = 'SELECT * FROM users WHERE is_bot = 0 AND username = "{0}";'.format(search_term)
+        print(query)
         sql_expression = text(query)
         with engine.connect() as connection:
-            result = connection.execute(sql_expression)
+            result = db.session.execute(sql_expression)
             users = result.fetchall()
 
         return render_template('search_user.html', users=users, form=form)

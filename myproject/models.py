@@ -28,11 +28,13 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(256))
     is_admin = db.Column(db.Boolean, default=False)
+    is_bot = db.Column(db.Boolean, default=False)
 
-    def __init__(self, email, username, password):
+    def __init__(self, email, username, password, is_bot=False):
         self.email = email
         self.username = username
         self.password_hash = generate_password_hash(password, method="pbkdf2:md5")
+        self.is_bot = is_bot
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
