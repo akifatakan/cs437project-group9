@@ -11,27 +11,7 @@ from myproject.forms import (SignUpForm, LoginForm, DeleteUserForm, ChangeRoleFo
                              SearchUserForm, FollowFriendForm, UnfollowFriendForm, SearchCommentForm,
                              LikeCommentForm, UnlikeCommentForm)
 from myproject.auth_config import admin_required
-import logging
 
-class MyFormatter(logging.Formatter):
-    def format(self, record):
-        log_data = {
-            'IP': request.remote_addr,  
-            'Log': record.msg,          
-            'Date': self.formatTime(record, self.datefmt), 
-        }
-        return str(log_data)
-
-
-logging.basicConfig(
-    level=logging.DEBUG,  
-    handlers=[
-        logging.FileHandler('app.log'),  
-    ])
-
-
-for handler in logging.root.handlers:
-    handler.setFormatter(MyFormatter())
 
 engine = create_engine("mysql+pymysql://cs437:cs437project@localhost/cs437_finance_db")
 
@@ -52,7 +32,6 @@ def admin_page():
         else:
             # A1 --> SQL INJECTION VULNERABILITY
             query = f"SELECT * FROM users WHERE id = {searched_text}"
-            app.logger.info(f"SQL query: {query}")
             sql_expression = text(query)
             with engine.connect() as connection:
                 result = connection.execute(sql_expression)
@@ -75,7 +54,6 @@ def index():
             entries = News.query.all()
         else:
             query = f"SELECT * FROM news WHERE title LIKE '%{searched_text}%'"
-            app.logger.info(f"SQL query: {query}")            
             sql_expression = text(query)
             with engine.connect() as connection:
                 result = connection.execute(sql_expression)
@@ -235,7 +213,6 @@ def news_details(news_id):
         flash('Comment added successfully', 'success')
         comments = Comment.query.filter_by(news_id=news_id).all()
         for comment in comments:
-            app.logger.info(f"Comment is shown: {comment.comment}")
             user = User.query.get(comment.user_id)
             comment.user = user
         form.comment.data = ""
@@ -286,7 +263,6 @@ def search_user():
         search_term = form.search_term.data
         # Check if the search term is numeric (assuming it's a user ID)
         query = 'SELECT * FROM users WHERE is_bot = 0 AND username = "{0}";'.format(search_term)
-        app.logger.info(f"SQL query: {query}")
         sql_expression = text(query)
         with engine.connect() as connection:
             result = db.session.execute(sql_expression)
@@ -359,7 +335,6 @@ def search_comment():
         comment_id = form.search_term.data
         #A2 --> XSS
         comment = Comment.query.get(comment_id)
-        app.logger.info(f"Searched comment is : {comment.comment} by comment id: {comment.id}")
         if comment is not None:
             template = f"""
             <p> {comment.comment} </p>"""
@@ -375,7 +350,6 @@ def search_comment():
 def redirect_to_external():
     url = request.args.get('url', None)
     if url:
-        app.logger.info(f"Redirected to the page: {url}")
         return redirect(url)
 
     return "No URL provided for redirection."
