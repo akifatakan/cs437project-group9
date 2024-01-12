@@ -28,6 +28,7 @@ def admin_page():
         if searched_text == "":
             users = User.query.all()
         else:
+            # A1 --> SQL INJECTION VULNERABILITY
             query = f"SELECT * FROM users WHERE id = {searched_text}"
             sql_expression = text(query)
             print(sql_expression)
@@ -98,6 +99,22 @@ def signup_page():
         return redirect(url_for('login_page'))
     return render_template('signup.html', form=form)
 
+
+@app.route('/createuser', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def create_user():
+    form = SignUpForm()
+    if form.validate_on_submit():
+        user = User(email=form.email.data,
+                    username=form.username.data,
+                    password=form.password.data)
+
+        db.session.add(user)
+        db.session.commit()
+        flash('User Created Successfully!')
+        return redirect(url_for('admin_page'))
+    return render_template('create_user.html', form=form)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login_page():
@@ -173,6 +190,7 @@ def news_details(news_id):
         return redirect(redirect_url)
 
     if form.validate_on_submit() and current_user.is_authenticated:
+        #A2 --> XSS VULN
         comment_text = form.comment.data
         new_comment = Comment(comment=comment_text, news_id=news_entry.id, user_id=current_user.id)
         db.session.add(new_comment)
@@ -301,6 +319,7 @@ def search_comment():
     template = ""
     if form.validate_on_submit():
         comment_id = form.search_term.data
+        #A2 --> XSS
         comment = Comment.query.get(comment_id)
         if comment is not None:
             template = f"""
