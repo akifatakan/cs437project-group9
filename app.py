@@ -11,6 +11,27 @@ from myproject.forms import (SignUpForm, LoginForm, DeleteUserForm, ChangeRoleFo
                              SearchUserForm, FollowFriendForm, UnfollowFriendForm, SearchCommentForm,
                              LikeCommentForm, UnlikeCommentForm)
 from myproject.auth_config import admin_required
+import logging
+
+class MyFormatter(logging.Formatter):
+    def format(self, record):
+        log_data = {
+            'IP': request.remote_addr,  
+            'Log': record.msg,          
+            'Date': self.formatTime(record, self.datefmt), 
+        }
+        return str(log_data)
+
+
+logging.basicConfig(
+    level=logging.DEBUG,  
+    handlers=[
+        logging.FileHandler('app.log'),  
+    ])
+
+
+for handler in logging.root.handlers:
+    handler.setFormatter(MyFormatter())
 
 engine = create_engine("mysql+pymysql://cs437:cs437project@localhost/cs437_finance_db")
 
@@ -31,8 +52,8 @@ def admin_page():
         else:
             # A1 --> SQL INJECTION VULNERABILITY
             query = f"SELECT * FROM users WHERE id = {searched_text}"
+            app.logger.info(f"SQL query: {query}")
             sql_expression = text(query)
-            print(sql_expression)
             with engine.connect() as connection:
                 result = connection.execute(sql_expression)
                 users = result.fetchall()
@@ -54,11 +75,11 @@ def index():
             entries = News.query.all()
         else:
             query = f"SELECT * FROM news WHERE title LIKE '%{searched_text}%'"
+            app.logger.info(f"SQL query: {query}")            
             sql_expression = text(query)
             with engine.connect() as connection:
                 result = connection.execute(sql_expression)
                 entries = result.fetchall()
-            print(entries[0])
         return render_template('index.html', entries=entries, form=form)
 
     entries = News.query.order_by(News.published.desc()).all()
@@ -76,14 +97,19 @@ def logout():
 @app.route('/welcome')
 @login_required
 def welcome_user():
-    if request.args.get('username'):
-        username = request.args.get('username')
+    # Getting the username from query parameter if provided
+    username = request.args.get('username', '')
+
+    # If the username is the same as the logged-in user's username or if no specific username is provided
+    if username == current_user.username or username == '':
+        return render_template('welcome_user.html', username=current_user.username)
+    else:
+        # If a different username is provided via query parameter
         template = f"""
         <h1> Welcome {username} </h1> 
         """
         return render_template_string(template)
 
-    return render_template('welcome_user.html')
 
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -143,9 +169,13 @@ def login_page():
             # So let's now check if that next exists, otherwise we'll go to
             # the welcome page.
             if next is None or not next[0] == '/':
-                next = url_for('welcome_user')
+                next_page = url_for('welcome_user')
 
-            return redirect(next)
+                # Append the username as a query parameter to the 'next' URL
+                next_page = f"{next_page}?username={current_user.username}"
+
+                return redirect(next_page)
+
     return render_template('login.html', form=form)
 
 
@@ -193,8 +223,8 @@ def news_details(news_id):
     likeCommentForm = LikeCommentForm()
     unlikeCommentForm = UnlikeCommentForm()
     redirect_url = request.args.get('url')
+
     if redirect_url:
-        print(redirect_url)
         return redirect(redirect_url)
 
     if form.validate_on_submit() and current_user.is_authenticated:
@@ -206,6 +236,7 @@ def news_details(news_id):
         flash('Comment added successfully', 'success')
         comments = Comment.query.filter_by(news_id=news_id).all()
         for comment in comments:
+            app.logger.info(f"Comment is shown: {comment.comment}")
             user = User.query.get(comment.user_id)
             comment.user = user
         form.comment.data = ""
@@ -256,7 +287,7 @@ def search_user():
         search_term = form.search_term.data
         # Check if the search term is numeric (assuming it's a user ID)
         query = 'SELECT * FROM users WHERE is_bot = 0 AND username = "{0}";'.format(search_term)
-        print(query)
+        app.logger.info(f"SQL query: {query}")
         sql_expression = text(query)
         with engine.connect() as connection:
             result = db.session.execute(sql_expression)
@@ -329,6 +360,7 @@ def search_comment():
         comment_id = form.search_term.data
         #A2 --> XSS
         comment = Comment.query.get(comment_id)
+        app.logger.info(f"Searched comment is : {comment.comment} by comment id: {comment.id}")
         if comment is not None:
             template = f"""
             <p> {comment.comment} </p>"""
@@ -344,7 +376,7 @@ def search_comment():
 def redirect_to_external():
     url = request.args.get('url', None)
     if url:
-        #A10 --> UNVALIDATED REDIRECT AND FORWARD
+        app.logger.info(f"Redirected to the page: {url}")
         return redirect(url)
 
     return "No URL provided for redirection."
