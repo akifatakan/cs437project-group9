@@ -28,12 +28,10 @@ def admin_page():
         if searched_text == "":
             users = User.query.all()
         else:
-            query = f"SELECT * FROM users WHERE id = {searched_text}"
-            sql_expression = text(query)
-            print(sql_expression)
-            with engine.connect() as connection:
-                result = connection.execute(sql_expression)
-                users = result.fetchall()
+            query = text("SELECT * FROM users WHERE id = :searched_id")
+
+            # Execute the query with the searched_id as a parameter
+            users = db.session.execute(query, {"searched_id": searched_text}).fetchall()
         return render_template('admin.html', users=users, form=form,
                                search_form=search_form, delete_user_form=delete_user_form)
 
@@ -51,12 +49,10 @@ def index():
         if searched_text == "":
             entries = News.query.all()
         else:
-            query = f"SELECT * FROM news WHERE title LIKE '%{searched_text}%'"
-            sql_expression = text(query)
-            with engine.connect() as connection:
-                result = connection.execute(sql_expression)
-                entries = result.fetchall()
-            print(entries[0])
+            query = text("SELECT * FROM news WHERE title LIKE :searched_text")
+
+            # Execute the query with the searched_text as a parameter
+            entries = db.session.execute(query, {"searched_text": f"%{searched_text}%"}).fetchall()
         return render_template('index.html', entries=entries, form=form)
 
     entries = News.query.order_by(News.published.desc()).all()
@@ -228,11 +224,10 @@ def search_user():
     if form.validate_on_submit():
         search_term = form.search_term.data
         # Check if the search term is numeric (assuming it's a user ID)
-        query = 'SELECT * FROM users WHERE username LIKE "%{0}%";'.format(search_term)
-        sql_expression = text(query)
-        with engine.connect() as connection:
-            result = connection.execute(sql_expression)
-            users = result.fetchall()
+        query = text("SELECT * FROM users WHERE username LIKE :search_term")
+
+        # Execute the query with the search term as a parameter
+        users = db.session.execute(query, {"search_term": f"%{search_term}%"}).fetchall()
 
         return render_template('search_user.html', users=users, form=form)
 
@@ -315,11 +310,15 @@ def search_comment():
 def redirect_to_external():
     url = request.args.get('url', None)
     if url:
-        #A10 --> UNVALIDATED REDIRECT AND FORWARD
-        return redirect(url)
+        #A10 --> UNVALIDATED REDIRECT AND FORWARD PATCHED
+
+        if "www.ntv.com.tr" in url:
+            return redirect(url)
+        else:
+            return "Invalid URL"
 
     return "No URL provided for redirection."
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5001)
