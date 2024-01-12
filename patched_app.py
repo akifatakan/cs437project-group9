@@ -72,14 +72,18 @@ def logout():
 @app.route('/welcome')
 @login_required
 def welcome_user():
-    if request.args.get('username'):
-        username = request.args.get('username')
+    # Getting the username from query parameter if provided
+    username = request.args.get('username', '')
+
+    # If the username is the same as the logged-in user's username or if no specific username is provided
+    if username == current_user.username or username == '':
+        return render_template('welcome_user.html', username=current_user.username)
+    else:
+        # If a different username is provided via query parameter
         template = f"""
         <h1> Welcome {username} </h1> 
         """
-        return render_template_string(template)
-
-    return render_template('welcome_user.html')
+        return render_template_string(escape(template))
 
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -122,9 +126,13 @@ def login_page():
             # So let's now check if that next exists, otherwise we'll go to
             # the welcome page.
             if next is None or not next[0] == '/':
-                next = url_for('welcome_user')
+                next_page = url_for('welcome_user')
 
-            return redirect(next)
+                # Append the username as a query parameter to the 'next' URL
+                next_page = f"{next_page}?username={current_user.username}"
+
+                return redirect(next_page)
+
     return render_template('login.html', form=form)
 
 
